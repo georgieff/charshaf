@@ -32,7 +32,7 @@ var parse_anchors = function(crawl_options) {
         })
       });
       // /save anchors
-    fs.writeFile("./sites/anchors_" + crawl_options['site_name'] + '.txt', JSON.stringify(arr));
+    fs.writeFile("./sites/anchors_" + crawl_options['site_name'] + '.json', JSON.stringify(arr));
     console.log(crawl_options['site_name'].bold + ' parsing - done'.green);
   });
 }
@@ -43,7 +43,7 @@ var crawl_page = function (crawl_options, callback) {
   http.get(crawl_options['host'], function (http_res) {
 
     http_res.on("data", function (chunk) {
-      //sum the data
+      //sum the content
       data += chunk;
     });
 
@@ -54,6 +54,11 @@ var crawl_page = function (crawl_options, callback) {
       callback(crawl_options);
     });
   });
+}
+
+//check if sites folder doesn't exist
+if (!fs.existsSync("./sites/")) {
+    fs.mkdirSync("./sites/")
 }
 
 for(var key in config_data['websites']){
