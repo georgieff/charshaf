@@ -1,0 +1,17 @@
+{
+  "eq_selector": ".some.divs.classes",
+  "websites": [
+  {
+    "site_name": "site1",
+    "host": "http://www.site.com/"
+  },
+  {
+    "site_name": "site2",
+    "host": "http://blogs.site.com/"
+  },
+  {
+    "site_name": "site3",
+    "host": "http://support.site.com/"
+  }
+  ]
+}

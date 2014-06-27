@@ -1,0 +1,13 @@
+{
+  "name": "charshaf",
+  "version": "0.0.1",
+  "description": "simple crawling tool to check anchors consistency between different pages across different domains",
+  "main": "crawl.js",
+  "dependencies": {
+    "cheerio": "~0.17.0"
+  },
+  "author": "georgieff",
+  "devDependencies": {
+    "colors": "^0.6.2"
+  }
+}
