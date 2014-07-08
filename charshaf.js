@@ -2,7 +2,8 @@ var http = require("http"),
     fs = require('fs'),
     config_file = __dirname + '/websites.json',
     config_data = require(config_file),
-    colors = require('colors');
+    colors = require('colors'),
+    scrapped_arr = [];
 
 var to_absolute = function (href, base) {
   if(href.indexOf("/") == 0) {
@@ -22,7 +23,7 @@ var remove_file = function (file_name, callback) {
   });
 }
 
-var parse_anchors = function(crawl_options) {
+var parse_anchors = function(crawl_options, callback) {
   // read each file and parse the needed anchors, then save them to jsons
   fs.readFile( __dirname + "/sites/" + crawl_options['site_name'] + ".txt", function (err, data) {
     if (err) {
@@ -46,6 +47,8 @@ var parse_anchors = function(crawl_options) {
       remove_file("./sites/anchors_" + crawl_options['site_name'] + '.json', function () {
         fs.writeFileSync("./sites/anchors_" + crawl_options['site_name'] + '.json', JSON.stringify(arr));
         console.log(crawl_options['site_name'].bold + ' parsing - done. '.green + content.length.toString().white.bold + " anchors added".green );
+        scrapped_arr[crawl_options['site_name']] = arr;
+        callback();
       });
     });
 }
@@ -74,7 +77,65 @@ if (!fs.existsSync("./sites/")) {
   fs.mkdirSync("./sites/")
 }
 
-for(var key in config_data['websites']){
-  var website = config_data['websites'][key];
-  crawl_page(website, parse_anchors)
+function asyncLoop(iterations, func, callback) {
+  var index = 0;
+  var done = false;
+  var loop = {
+    next: function() {
+      if (done) {
+        return;
+      }
+
+      if (index < iterations) {
+        index++;
+        func(loop);
+
+      } else {
+        done = true;
+        callback();
+      }
+    },
+
+    iteration: function() {
+      return index - 1;
+    },
+
+    break: function() {
+      done = true;
+      callback();
+    }
+  };
+  loop.next();
+  return loop;
 }
+
+function compare_anchors(scrapped_arr, config_data) {
+  website_anchors = scrapped_arr[config_data['websites'][0]['site_name']];
+  website_anchors.forEach(function(anchor) {
+    for (var i = config_data['websites'].length - 1; i > 0; i--) {
+      var found_it = false,
+          website_anchors_tocompare = scrapped_arr[config_data['websites'][i]['site_name']];
+      website_anchors_tocompare.forEach(function(anchor_tocompare) {
+        if(anchor.text == anchor_tocompare.text && anchor.url == anchor_tocompare.url) {
+          found_it = true;
+          return;
+        }
+      });
+      if(!found_it) {
+        console.log("[FAIL]".red + " with " + anchor.text.yellow + " on " + config_data['websites'][0]['host'].grey + " and " + config_data['websites'][i]['host'].grey);
+      }
+    };
+  });
+}
+
+asyncLoop(config_data['websites'].length, function(loop) {
+  var website = config_data['websites'][loop.iteration()];
+  crawl_page(website, function(crawl_options) {
+    parse_anchors(crawl_options, function() {
+      loop.next();
+    });
+  })},
+  function() {
+    compare_anchors(scrapped_arr, config_data);
+  }
+);
