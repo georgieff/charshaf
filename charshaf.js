@@ -8,7 +8,7 @@ var http = require("http"),
     mail_server  = email_config.server.connect({
        user:    "",
        password:"",
-       host:    "192.168.0.112" //devsmtp01.telerik.com
+       host:    "192.168.0.112" //set your smtp. more info here: https://github.com/eleith/emailjs
     });
 
 var remove_duplicates = function (array_to_merge) {
