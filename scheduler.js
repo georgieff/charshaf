@@ -1,8 +1,8 @@
 var schedule = require('node-schedule');
 
 var rule = new schedule.RecurrenceRule();
-// rule.minute = 51;
-rule.hour = 17;
+rule.minute = 00;
+rule.hour = 9;
 
 var j = schedule.scheduleJob(rule, function(){
     var exec = require('child_process').exec,

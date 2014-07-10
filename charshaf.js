@@ -197,7 +197,7 @@ asyncLoop(config_data['websites'].length, function(loop) {
     var errors_lists = compare_anchors(scrapped_arr, config_data),
         has_errors = false;
     for (subscriber_mail in errors_lists) {
-      // send_mail(mail_server, subscriber_mail, errors_lists[subscriber_mail]);
+      send_mail(mail_server, subscriber_mail, errors_lists[subscriber_mail]);
       system_message("Email to " + subscriber_mail.grey + "... sent.");
       has_errors = true;
     }
