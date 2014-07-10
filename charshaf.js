@@ -84,10 +84,17 @@ var merge_subscribers = function (main_list, first_list, second_list) {
 
 var send_mail = function (server, email_to, email_text) {
   server.send({
-     from:    "WCAT Reporting <noreply@telerik.com>",
-     to:      email_to,
-     subject: "Anchors Consistency Report",
-     text:    email_text
+    from: "WCAT Reporting <noreply@telerik.com>",
+    to: email_to,
+    subject: "Anchors Consistency Report",
+    text: email_text,
+    attachment:
+    [
+      {
+        data: "<html><div style=\"font-family: Arial; font-size: 11pt;\">" + email_text + "</div></html>",
+        alternative: true
+      }
+    ]
   }, function(err, message) {
     if (err) system_message(err);
   });
@@ -173,12 +180,12 @@ function compare_anchors(scrapped_arr, config_data) {
       //if we didn't find the equal log it as a error
       if (!found_it) {
         system_message("[FAIL]".red + " with " + anchor.text.yellow + " on " + config_data['websites'][0]['host'].grey + " and " + config_data['websites'][i]['host'].grey);
-        var error_message = "Different \"" + anchor.text + "\" anchor on " + config_data['websites'][0]['host'] + " and " + config_data['websites'][i]['host'];
+        var error_message = "Different \"<b>" + anchor.text + "</b>\" anchor on " + config_data['websites'][0]['host'] + " and " + config_data['websites'][i]['host'];
         var subscribers = merge_subscribers(config_data['subscribers'],config_data['websites'][0]['subscribers'], config_data['websites'][i]['subscribers']);
 
         subscribers.forEach(function(subscriber) {
           if (!found_errors[subscriber]) found_errors[subscriber] = [];
-          found_errors[subscriber] += (error_message + "\n")
+          found_errors[subscriber] += (error_message + " <br>\n")
         });
       }
     };
