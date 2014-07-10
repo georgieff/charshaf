@@ -11,6 +11,10 @@ var http = require("http"),
        host:    "192.168.0.112" //set your smtp. more info here: https://github.com/eleith/emailjs
     });
 
+var system_message = function (message, type) {
+  type = type || "system";
+  console.log("[".grey + type.grey + "] ".grey + message);
+}
 var remove_duplicates = function (array_to_merge) {
   var temp = new Array();
   label:for (i=0;i<array_to_merge.length;i++) {
@@ -56,9 +60,17 @@ function asyncLoop(iterations, func, callback) {
 }
 
 var to_absolute = function (href, base) {
-  if (href.indexOf("/") == 0) {
+  // remove last character if href finishes on "/"
+  if (href.slice(-1) == "/") href = href.slice(0, -1);
+  //if it starts on "/" - it's probably relative
+  if (href.indexOf("/") == 0 && href.indexOf("//") != 0) {
     return base.replace(/\/$/, "") + href;
-  } else {
+  }
+  //but if it starts with "//" it's another domain : )
+  else if (href.indexOf("//") == 0) {
+    return base.split("/")[0] + href;
+  }
+  else {
     return href;
   }
 }
@@ -77,7 +89,7 @@ var send_mail = function (server, email_to, email_text) {
      subject: "Anchors Consistency Report",
      text:    email_text
   }, function(err, message) {
-    if (err) console.log(err);
+    if (err) system_message(err);
   });
 }
 
@@ -114,7 +126,7 @@ var parse_anchors = function(crawl_options, callback) {
       //save anchors
       remove_file("./sites/anchors_" + crawl_options['site_name'] + '.json', function () {
         fs.writeFileSync("./sites/anchors_" + crawl_options['site_name'] + '.json', JSON.stringify(arr));
-        console.log(crawl_options['site_name'].bold + ' parsing - done. '.green + content.length.toString().white.bold + " anchors added".green );
+        system_message(crawl_options['site_name'].bold + ' parsing - done. '.green + content.length.toString().white.bold + " anchors added".green, "parser");
         scrapped_arr[crawl_options['site_name']] = arr;
         callback();
       });
@@ -134,7 +146,7 @@ var crawl_page = function (crawl_options, callback) {
     http_res.on("end", function () {
       //save page
       fs.writeFileSync("./sites/" + crawl_options['site_name'] + '.txt', data);
-      console.log(crawl_options['site_name'].bold + ' crawling - done'.cyan);
+      system_message(crawl_options['site_name'].bold + ' crawling - done'.cyan, "crawler");
       callback(crawl_options);
     });
   });
@@ -151,7 +163,7 @@ function compare_anchors(scrapped_arr, config_data) {
   website_anchors.forEach(function(anchor) {
     for (var i = config_data['websites'].length - 1; i > 0; i--) {
       var found_it = false,
-          website_anchors_tocompare = scrapped_arr[config_data['websites'][i]['site_name']];
+      website_anchors_tocompare = scrapped_arr[config_data['websites'][i]['site_name']];
       website_anchors_tocompare.forEach(function(anchor_tocompare) {
         if (anchor.text == anchor_tocompare.text && anchor.url == anchor_tocompare.url) {
           found_it = true;
@@ -160,7 +172,7 @@ function compare_anchors(scrapped_arr, config_data) {
       });
       //if we didn't find the equal log it as a error
       if (!found_it) {
-        console.log("[FAIL]".red + " with " + anchor.text.yellow + " on " + config_data['websites'][0]['host'].grey + " and " + config_data['websites'][i]['host'].grey);
+        system_message("[FAIL]".red + " with " + anchor.text.yellow + " on " + config_data['websites'][0]['host'].grey + " and " + config_data['websites'][i]['host'].grey);
         var error_message = "Different \"" + anchor.text + "\" anchor on " + config_data['websites'][0]['host'] + " and " + config_data['websites'][i]['host'];
         var subscribers = merge_subscribers(config_data['subscribers'],config_data['websites'][0]['subscribers'], config_data['websites'][i]['subscribers']);
 
@@ -186,9 +198,9 @@ asyncLoop(config_data['websites'].length, function(loop) {
         has_errors = false;
     for (subscriber_mail in errors_lists) {
       // send_mail(mail_server, subscriber_mail, errors_lists[subscriber_mail]);
-      console.log("Email to " + subscriber_mail.grey + "... sent.");
+      system_message("Email to " + subscriber_mail.grey + "... sent.");
       has_errors = true;
     }
-    if (!has_errors) console.log("The day has just become even more amazing!".green);
+    if (!has_errors) system_message("The day has just become even more amazing!".green);
   }
 );

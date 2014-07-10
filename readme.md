@@ -43,11 +43,11 @@ Check the **websites.json** file. The structure is simple:
 }
 ```
 * **eq_selector** - The selector of the container containing anchors. Should be the same for all of the pages. In the example above will select `<element class="some div classes"></element>` content. You can use the same syntax for selection as the one in jQuery.
-* **subscribers** - List of subscribers who will receive all of the errors about all of the websites.
+* **subscribers** [optional] - List of subscribers who will receive all of the errors about all of the websites.
 * **websites** - List of pages to be checked for consistent anchors.
   * **site_name** - used for caption for generated files.
   * **host** - Valid url of the page.
-  * **subscribers** - List of subscribers (under some of the websites) who will receive all of the errors about the specific website.
+  * **subscribers** [optional] - List of subscribers (under some of the websites) who will receive all of the errors about the specific website.
 
 If everything is fine you're ready to run: `node charshaf.js`
 
