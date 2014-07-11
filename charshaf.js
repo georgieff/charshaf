@@ -1,4 +1,5 @@
 var http = require("http"),
+    https = require('https'),
     fs = require('fs'),
     config_file = __dirname + '/websites.json',
     config_data = require(config_file),
@@ -119,15 +120,16 @@ var parse_anchors = function(crawl_options, callback) {
     var cheerio = require('cheerio'),
     $ = cheerio.load(data.toString());
 
-    var arr = [];
+    var arr = [],
+        eq_selector = crawl_options['eq_selector'] || config_data.eq_selector;
 
-    var content = $(config_data.eq_selector)
+    var content = $(eq_selector)
     .find('a');
     content.each(function() {
       arr.push({
         "href": $(this).attr('href'),
         "text": $(this).text().trim(),
-        "url": to_absolute($(this).attr('href'), crawl_options['host'])
+        "url": to_absolute($(this).attr('href'), crawl_options['base_url'] || crawl_options['host']).replace(/.*?:\/\//g, "")
       })
     });
       //save anchors
@@ -142,15 +144,18 @@ var parse_anchors = function(crawl_options, callback) {
 
 var crawl_page = function (crawl_options, callback) {
   callback = callback || function() {};
-  var data = "";
-  http.get(crawl_options['host'], function (http_res) {
+  var data = "",
+      protocol = https;
 
-    http_res.on("data", function (chunk) {
+  if(crawl_options['host'].split("/")[0] == 'http:') protocol = http;
+  protocol.get(crawl_options['host'], function (res) {
+
+    res.on("data", function (chunk) {
       //sum the content
       data += chunk;
     });
 
-    http_res.on("end", function () {
+    res.on("end", function () {
       //save page
       fs.writeFileSync("./sites/" + crawl_options['site_name'] + '.txt', data);
       system_message(crawl_options['site_name'].bold + ' crawling - done'.cyan, "crawler");
