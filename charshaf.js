@@ -177,7 +177,7 @@ function compare_anchors(scrapped_arr, config_data) {
       var found_it = false,
       website_anchors_tocompare = scrapped_arr[config_data['websites'][i]['site_name']];
       website_anchors_tocompare.forEach(function(anchor_tocompare) {
-        if (anchor.text == anchor_tocompare.text && anchor.url == anchor_tocompare.url) {
+        if (anchor.text.replace(/\s+/g, ' ') == anchor_tocompare.text.replace(/\s+/g, ' ') && anchor.url == anchor_tocompare.url) {
           found_it = true;
           return;
         }
